@@ -1,0 +1,17 @@
+# docker-compose.yml
+# Defines and runs the app container with volume persistence.
+
+# version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: fastapi-crud-app
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist SQLite database file
+      - ./data:/app/data
+    environment:
+      # - DATABASE_URL=sqlite:///./data/test.db   # optional, we can use this if we change database.py
+      - DATABASE_URL=sqlite:////app/data/test.db   # note four slashes for absolute path

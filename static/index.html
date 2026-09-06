@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .hidden { display: none; }
+        form { margin-bottom: 1rem; }
+        input, button { padding: 0.5rem; margin: 0.2rem 0; }
+        ul { list-style: none; padding: 0; }
+        li { background: #f4f4f4; margin: 0.5rem 0; padding: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>Item Manager</h1>
+
+    <!-- Login / Register Section -->
+    <div id="auth-section">
+        <h2>Login or Register</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button onclick="register()">Register</button>
+    </div>
+
+    <!-- Items Section (hidden until logged in) -->
+    <div id="items-section" class="hidden">
+        <h2>Items</h2>
+        <button onclick="logout()">Logout</button>
+        <form id="create-item-form">
+            <input type="text" id="item-name" placeholder="Name" required>
+            <input type="text" id="item-description" placeholder="Description (optional)">
+            <input type="number" id="item-price" placeholder="Price" step="0.01" required>
+            <button type="submit">Add Item</button>
+        </form>
+        <ul id="items-list"></ul>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

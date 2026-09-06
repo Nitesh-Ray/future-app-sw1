@@ -1,0 +1,15 @@
+## Full `.dockerignore` (updated)
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+env
+.env
+.git
+.gitignore
+.pytest_cache
+*.db
+data
+<!-- uv.lock -->
