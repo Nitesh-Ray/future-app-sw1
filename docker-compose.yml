@@ -3,15 +3,34 @@
 
 # version: "3.9"
 
+
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: fastapi-postgres
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+      POSTGRES_DB: appdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # optional, for external tools
+
+
   app:
     build: .
     container_name: fastapi-crud-app
     ports:
       - "8000:8000"
-    volumes:
-      # Persist SQLite database file
-      - ./data:/app/data
+    # volumes:
+    #   # Persist SQLite database file
+    #   - ./data:/app/data
     environment:
       # - DATABASE_URL=sqlite:///./data/test.db   # optional, we can use this if we change database.py
-      - DATABASE_URL=sqlite:////app/data/test.db   # note four slashes for absolute path
+      DATABASE_URL: postgresql://appuser:apppassword@db:5432/appdb   # note four slashes for absolute path
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

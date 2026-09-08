@@ -92,3 +92,15 @@ Now your project is fully professional. You could continue with:
 - **Add linting** – use `ruff` or `black` to enforce code style.
 
 Which of these would you like to explore next?
+
+
+
+## Database
+
+By default, the app uses SQLite (file `test.db`) for local development without Docker.  
+When running with Docker Compose, it automatically uses PostgreSQL (see `docker-compose.yml`).
+
+To use PostgreSQL locally without Docker, set the `DATABASE_URL` environment variable:
+
+```bash
+export DATABASE_URL=postgresql://user:password@localhost:5432/mydb
