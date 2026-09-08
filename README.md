@@ -104,3 +104,92 @@ To use PostgreSQL locally without Docker, set the `DATABASE_URL` environment var
 
 ```bash
 export DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+
+
+
+Also update the Docker section:
+
+```markdown
+## Docker
+
+1. Make sure Docker and Docker Compose are installed.
+2. Build and start the containers:
+   ```bash
+   docker-compose up --build
+
+
+   docker-compose down
+
+
+---
+
+## How to Run with PostgreSQL
+
+1. Make sure Docker Desktop (or Docker Engine) is running.
+2. Update the three files as described above.
+3. Run:
+   ```bash
+   docker-compose up --build
+
+
+
+## Code Coverage
+
+Run tests with coverage locally:
+
+```bash
+pytest --cov=. --cov-report=term-missing
+
+
+---
+
+## What This Demonstrates
+
+- **Test quality measurement** – ensures critical parts are tested.
+- **CI enforcement** – prevents merging code that lowers coverage.
+- **Professional practice** – many open-source projects enforce coverage thresholds.
+
+---
+
+## Next Steps
+
+Now you can further strengthen your project with:
+
+- **Linting & Formatting** – add `ruff` or `black` to CI.
+- **Database Migrations** – use Alembic to manage schema changes safely.
+- **API Versioning** – prefix endpoints with `/api/v1`.
+- **Refresh Tokens** – improve authentication security.
+
+Would you like to add linting next, or perhaps database migrations?
+
+
+## Database Migrations
+
+This project uses Alembic for schema management.  
+The initial migration creates the `users` and `items` tables.
+
+### Apply migrations
+
+Locally (SQLite):
+```bash
+alembic upgrade head
+uvicorn main:app --reload
+```
+Now the tables will be created by Alembic, and the migration will be recorded in the alembic_version table.
+
+
+
+## Caching with Redis
+
+The application uses Redis to cache frequently accessed items, reducing database load.
+
+- Redis runs as a service in Docker Compose.
+- The cache has a TTL of 30 seconds (configurable in `cache.py`).
+- To run without Docker, install Redis locally and start it; the app will connect to `redis://localhost:6379/0`.
+
+How to Run with Redis
+docker-compose up --build
+Redis will start alongside the app and database.
+
+The app now caches item reads and invalidates on update/delete.
+

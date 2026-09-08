@@ -9,9 +9,9 @@ import models, schemas, auth
 from database import SessionLocal, engine
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-
+import cache
 # Create all tables defined in models (if they don't exist)
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)  
 
 # Create FastAPI instance with a title (shows in docs)
 app = FastAPI(title="Simple CRUD API")
@@ -90,21 +90,38 @@ def create_item(item: schemas.ItemCreate,
 # List items with pagination
 # ----------------------------
 @app.get("/items/", response_model=list[schemas.Item])
-def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db),current_user: models.User = Depends(auth.get_current_user)):
-    # Query all items, skip and limit for basic pagination
+def read_items(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(auth.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    cache_key = f"items:{skip}:{limit}"
+    cached = cache.cache_get(cache_key)
+    if cached:
+        return cached
     items = db.query(models.Item).offset(skip).limit(limit).all()
-    return items
+    # Convert to list of dicts for caching (or use Pydantic)
+    items_list = [schemas.Item.model_validate(item).model_dump() for item in items]
+    cache.cache_set(cache_key, items_list, ttl=30)   # cache for 30 seconds
+    return items_list
 
-# ----------------------------
-# Get a single item by ID
-# ----------------------------
 @app.get("/items/{item_id}", response_model=schemas.Item)
-def read_item(item_id: int, db: Session = Depends(get_db),current_user: models.User = Depends(auth.get_current_user)):
+def read_item(
+    item_id: int,
+    db: Session = Depends(auth.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    cache_key = f"item:{item_id}"
+    cached = cache.cache_get(cache_key)
+    if cached:
+        return cached
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if item is None:
-        # Return 404 if not found
         raise HTTPException(status_code=404, detail="Item not found")
-    return item
+    item_dict = schemas.Item.model_validate(item).model_dump()
+    cache.cache_set(cache_key, item_dict, ttl=30)
+    return item_dict
 
 # ----------------------------
 # Update an existing item
@@ -118,6 +135,7 @@ def update_item(item_id: int, item: schemas.ItemCreate, db: Session = Depends(ge
     for key, value in item.model_dump().items():
         setattr(db_item, key, value)
     db.commit()
+    cache.cache_delete(f"item:{item_id}")       # Optionally delete list cache keys as well (simplified: clear all items:*)
     db.refresh(db_item)
     return db_item
 
@@ -131,4 +149,5 @@ def delete_item(item_id: int, db: Session = Depends(get_db), current_user: model
         raise HTTPException(status_code=404, detail="Item not found")
     db.delete(db_item)
     db.commit()
+    cache.cache_delete(f"item:{item_id}")
     return {"message": "Item deleted"}

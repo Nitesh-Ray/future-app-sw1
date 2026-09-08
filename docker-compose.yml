@@ -17,6 +17,12 @@ services:
     ports:
       - "5432:5432"   # optional, for external tools
 
+  redis:
+    image: redis:7-alpine
+    container_name: fastapi-redis
+    ports:
+      - "6379:6379"
+
 
   app:
     build: .
@@ -28,9 +34,13 @@ services:
     #   - ./data:/app/data
     environment:
       # - DATABASE_URL=sqlite:///./data/test.db   # optional, we can use this if we change database.py
-      DATABASE_URL: postgresql://appuser:apppassword@db:5432/appdb   # note four slashes for absolute path
+      DATABASE_URL: postgresql://appuser:apppassword@db:5432/appdb
+      REDIS_URL: redis://redis:6379/0
+
     depends_on:
       - db
+    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
+
 
 volumes:
   postgres_data:
